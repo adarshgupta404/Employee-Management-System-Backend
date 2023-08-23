@@ -45,13 +45,13 @@ con.connect(function (err) {
 });
 
 let userID;
-// let refreshtoken = "";
+let refreshtoken = "";
 
 app.get('/dashboard', async (req, res)=>{
-  // const token = refreshtoken;
+  const token = refreshtoken;
   // console.log(token);
   try{
-    const token = req.cookies.token;
+    // const token = req.cookies.token;
     jwt.verify(token, process.env.JWT_SECRET_KEY, (err, result) => {
       if (err) {
         return res.json({ Status: "Failed" });
@@ -75,8 +75,8 @@ app.post("/login", (req, res) => {
     if (result.length > 0) {
       const id = result[0].id;
       const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: '1hr' }, { httpOnly: true });
-      res.cookie("token", token);
-      // refreshtoken = token;
+      // res.cookie("token", token);
+      refreshtoken = token;
       // console.log(result);
       userID = id;
       // console.log(userID)
@@ -180,8 +180,8 @@ app.get("/adminprofile", (req, res)=>{
 
 // Handling logout
 app.get('/logout', (req, res)=>{
-  // refreshtoken = ""
-  res.clearCookie('token');
+  refreshtoken = ""
+  // res.clearCookie('token');
   return res.json({ Status: "Logged out" });
 })
 
