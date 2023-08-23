@@ -74,7 +74,7 @@ app.post("/login", (req, res) => {
       return res.json({ Status: "Error", Error: "Error in running Query!" });
     if (result.length > 0) {
       const id = result[0].id;
-      const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: '1min' }, { httpOnly: true });
+      const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: '1min' });
       // res.cookie("token", token);
       refreshtoken = token;
       // console.log(result);
