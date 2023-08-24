@@ -181,6 +181,7 @@ app.get("/adminprofile", (req, res)=>{
 // Handling logout
 app.get('/logout', (req, res)=>{
   refreshtoken = ""
+  userID = -1;
   // res.clearCookie('token');
   return res.json({ Status: "Logged out" });
 })
