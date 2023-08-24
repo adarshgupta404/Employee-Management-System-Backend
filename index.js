@@ -7,7 +7,8 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const path = require("path");
 const app = express();
-const cloudinary = require("./utits/cloudinary");
+// const cloudinary = require("./utits/cloudinary");
+const cloudinary = require('cloudinary').v2;
 require("dotenv").config();
 const port = process.env.PORT || 8000;
 
@@ -42,6 +43,13 @@ var storage = multer.diskStorage({
   },
 });
 var upload = multer({ storage: storage });
+
+// Cloudinary Image Upload
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDNAME, 
+  api_key: process.env.AKIKEY, 
+  api_secret: process.env.APISECRET 
+});
 
 // Database Connection
 con.connect(function (err) {
