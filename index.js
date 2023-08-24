@@ -7,9 +7,9 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const path = require("path");
 const app = express();
-// const cloudinary = require("./utits/cloudinary");
-const cloudinary = require('cloudinary').v2;
-require("dotenv").config();
+const cloudinary = require("./utits/cloudinary");
+const dotenv = require('dotenv');
+dotenv.config();
 const port = process.env.PORT || 8000;
 
 app.use(
@@ -44,11 +44,11 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage });
 
-// Cloudinary Image Upload      
-cloudinary.config({ 
-  cloud_name: 'dpgncpd4i', 
-  api_key: '729568674526815', 
-  api_secret: 'oaStYHEt6a0sfV4xwm_38qDwNIg' 
+// Cloudinary Image Upload 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET
 });
 
 // Database Connection
