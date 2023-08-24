@@ -44,11 +44,11 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage });
 
-// Cloudinary Image Upload
+// Cloudinary Image Upload      
 cloudinary.config({ 
-  cloud_name: process.env.CLOUDNAME, 
-  api_key: process.env.AKIKEY, 
-  api_secret: process.env.APISECRET 
+  cloud_name: 'dpgncpd4i', 
+  api_key: '729568674526815', 
+  api_secret: 'oaStYHEt6a0sfV4xwm_38qDwNIg' 
 });
 
 // Database Connection
