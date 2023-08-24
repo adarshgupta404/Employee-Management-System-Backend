@@ -7,14 +7,17 @@ const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const path = require("path");
 const app = express();
-require('dotenv').config();
+const cloudinary = require("./utits/cloudinary");
+require("dotenv").config();
 const port = process.env.PORT || 8000;
 
-app.use(cors({
-  origin: process.env.HOST, // Only allow requests from this origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Only allow specified HTTP methods
-  credentials:true
-}));
+app.use(
+  cors({
+    origin: process.env.HOST, // Only allow requests from this origin
+    methods: ["GET", "POST", "PUT", "DELETE"], // Only allow specified HTTP methods
+    credentials: true,
+  })
+);
 
 app.use(cookieParser());
 app.use(express.json());
@@ -29,16 +32,18 @@ const con = mysql.createConnection({
   database: process.env.DATABASE,
 });
 
+// Multer middleware
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "public/images");
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now()+ '_' + file.originalname);
+    cb(null, Date.now() + "_" + file.originalname);
   },
 });
 var upload = multer({ storage: storage });
 
+// Database Connection
 con.connect(function (err) {
   if (err) console.log(err);
   else console.log("DB connected!");
@@ -47,10 +52,10 @@ con.connect(function (err) {
 let userID;
 let refreshtoken = "";
 
-app.get('/dashboard', async (req, res)=>{
+app.get("/dashboard", async (req, res) => {
   const token = refreshtoken;
   // console.log(token);
-  try{
+  try {
     // const token = req.cookies.token;
     jwt.verify(token, process.env.JWT_SECRET_KEY, (err, result) => {
       if (err) {
@@ -58,13 +63,11 @@ app.get('/dashboard', async (req, res)=>{
       }
       return res.json({ Status: "Success" });
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error(error);
     return res.json({ Status: "Failed", Error: error.message });
-  }  
-})
-
+  }
+});
 
 // Login API
 app.post("/login", (req, res) => {
@@ -74,13 +77,15 @@ app.post("/login", (req, res) => {
       return res.json({ Status: "Error", Error: "Error in running Query!" });
     if (result.length > 0) {
       const id = result[0].id;
-      const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, { expiresIn: '1min' });
+      const token = jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+        expiresIn: "1min",
+      });
       // res.cookie("token", token);
       refreshtoken = token;
       // console.log(result);
       userID = id;
       // console.log(userID)
-      return res.json({ Status: "Success"});
+      return res.json({ Status: "Success" });
     } else
       return res.json({ Status: "Error", Error: "Wrong Email or Password!" });
   });
@@ -97,21 +102,28 @@ app.get("/getuser", (req, res) => {
 
 // Creating new employ
 app.post("/create", upload.single("image"), function (req, res) {
-  const query =
-    "insert into employee(`name`, `email`, `password`, `address`,`image`, `salary`) values (?)";
-  bcrypt.hash(req.body.password.toString(), 10, (err, hash) => {
-    if (err) return res.json({ Error: "Error in hashing password!" });
-    const values = [
-      req.body.name,
-      req.body.email,
-      hash,
-      req.body.address,
-      req.file.filename,
-      req.body.salary,
-    ];
-    con.query(query, [values], (err, result) => {
-      if (err) return res.json({ Error: "Inside signup query" });
-      else return res.json({ Status: "Success" });
+  cloudinary.uploader.upload(req.file.path, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.json({ Error: "ERROR!" });
+    }
+    const query =
+      "insert into employee(`name`, `email`, `password`, `address`,`image`, `salary`) values (?)";
+    bcrypt.hash(req.body.password.toString(), 10, (err, hash) => {
+      if (err) return res.json({ Error: "Error in hashing password!" });
+      const values = [
+        req.body.name,
+        req.body.email,
+        hash,
+        req.body.address,
+        result.url,
+        req.body.salary,
+      ];
+      console.log(values[4]);
+      con.query(query, [values], (err, result) => {
+        if (err) return res.json({ Error: "Inside signup query" });
+        else return res.json({ Status: "Success" });
+      });
     });
   });
 });
@@ -166,25 +178,24 @@ app.delete("/delete/:id", (req, res) => {
 });
 
 // Getting admin profile
-app.get("/adminprofile", (req, res)=>{
+app.get("/adminprofile", (req, res) => {
   const query = "select `name`, `email`, `image` from users where id = ?";
-  con.query(query, [userID], (err, result)=>{
-    if(err)
-      console.log(err)
-    else{
-    // console.log(result);
-    return res.json({Status:"Success", Result:result})}
-  })
-})
-
+  con.query(query, [userID], (err, result) => {
+    if (err) console.log(err);
+    else {
+      // console.log(result);
+      return res.json({ Status: "Success", Result: result });
+    }
+  });
+});
 
 // Handling logout
-app.get('/logout', (req, res)=>{
-  refreshtoken = ""
+app.get("/logout", (req, res) => {
+  refreshtoken = "";
   userID = -1;
   // res.clearCookie('token');
   return res.json({ Status: "Logged out" });
-})
+});
 
 app.get("/", (req, res) => {
   res.send("Welcome to the backend of EMS!");
