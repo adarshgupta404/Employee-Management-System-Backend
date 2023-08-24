@@ -58,7 +58,7 @@ con.connect(function (err) {
   else console.log("DB connected!");
 });
 
-let userID;
+let userID = "";
 let refreshtoken = "";
 
 app.get("/dashboard", async (req, res) => {
@@ -201,7 +201,7 @@ app.get("/adminprofile", (req, res) => {
 // Handling logout
 app.get("/logout", (req, res) => {
   refreshtoken = "";
-  userID = -1;
+  userID = "";
   // res.clearCookie('token');
   return res.json({ Status: "Logged out" });
 });
